@@ -1,0 +1,45 @@
+services:
+  myfrontend:
+    build: ./frontend/.
+    container_name: my_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true
+    volumes:
+      - type: bind
+        source: ./frontend/frontend
+        target: /frontend
+        # node_modules の除外（コンテナ側で匿名ボリュームを使用）
+      - /frontend/node_modules
+
+  mybackend:
+    build: ./backend/.
+    container_name: my_backend
+    ports:
+      - "8000:8000" #バックエンドAPI用
+      - "587:587" #SMTP用ポート
+    environment:
+      - WATCHPACK_POLLING=true
+    volumes:
+      - type: bind
+        source: ./backend/backend
+        target: /backend
+        # node_modules の除外（コンテナ側で匿名ボリュームを使用）
+      - /backend/node_modules
+  db:
+    build: ./db/.
+    container_name: my_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=my_db
+    volumes:
+      - type: volume
+        source: db-compose-volume
+        target: /var/lib/postgresql/data
+
+volumes:
+  db-compose-volume:
