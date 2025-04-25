@@ -16,5 +16,6 @@ ENV PORT=3000
 
 WORKDIR /frontend
 COPY frontend/package*.json ./
+COPY frontend/.env ./
 RUN npm install
 CMD ["npm","run","start"]

@@ -11,6 +11,9 @@ import MailAuth from './components/MailAuth.tsx';
 import SignUp from './pages/SignUp.tsx';
 import Registration from './components/Registration.tsx';
 import UploadIcon from './components/UploadIcon.tsx';
+import ResetPass from './components/ResetPassForm.tsx';
+import ResetPassForm from './components/ResetPassForm.tsx';
+import ResetPassPage from './components/ResetPassPage.tsx';
 
 
 export const App = () => {
@@ -23,6 +26,8 @@ export const App = () => {
           <Route path="/signup/mailauth" element={<MailAuth />}></Route>
           <Route path="/signup/registration" element={<Registration/>}></Route>
           <Route path="/main" element={<Main />} />
+          <Route path="/resetpass" element={<ResetPassForm/>} />
+          <Route path="/resetpass/mailreset" element={<ResetPassPage/>} />
           <Route path="/profile" element={<Profile />}></Route>
           <Route path="/profile/edit" element={<ProfileEdit />}></Route>
           <Route path='/profile/upload_icon' element={<UploadIcon/>}></Route>

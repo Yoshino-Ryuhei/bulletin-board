@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Register } from 'src/entities/register';
 import { Equal, MoreThan, Repository } from 'typeorm';
+import { User } from 'src/entities/user';
 
 const secretKey = Buffer.from('19386242917565235250');
 let counter = new Date().getSeconds();
@@ -13,6 +14,8 @@ export class MailService {
   constructor(
     @InjectRepository(Register)
     private registeRepository: Repository<Register>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   async registerUser(name: string, email: string, otp: string) {
@@ -33,7 +36,7 @@ export class MailService {
     return true;
   }
 
-  async sendTestMail(name: string, mailAdress: string) {
+  async sendRegisteMail(name: string, mailAdress: string) {
     // ワンタイムパスワードの作成
     const counterBuffer = Buffer.alloc(8);
     counterBuffer.writeBigUInt64BE(BigInt(counter));
@@ -72,9 +75,11 @@ export class MailService {
     const mailOptions = {
       from: process.env.MAIL_FROM,
       to: mailAdress,
-      subject: 'test',
-      html: `<p>Hello! ${name} Please access this URL to sign in our bulletin borad!</p>
-      <br><a href="http://localhost:3000/signup/mailauth?name=${name}&email=${mailAdress}">アカウント確認</a>
+      subject: 'One time password',
+      html:
+        `<p>Hello! ${name} Please access this URL to sign in our bulletin borad!</p>
+      <br><a href=${process.env.FRONTEND_DOMAIN}` +
+        `/signup/mailauth?name=${name}&email=${mailAdress}>アカウント確認</a>
       <br><div>email: ${mailAdress}</div>
       <br><div>One Time Password: ${otp}</div>`,
     };
@@ -85,6 +90,14 @@ export class MailService {
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
 
+    // ワンタイムパスワード発行履歴があるか
+    const pre_registe = await this.registeRepository.findOne({
+      where: {
+        name: Equal(name),
+        email: Equal(mailAdress),
+      },
+    });
+
     // 登録情報を格納
     const register = {
       name: name,
@@ -94,7 +107,54 @@ export class MailService {
       created_at: new Date(),
     };
 
-    await this.registeRepository.save(register);
+    // 発行履歴があるなら上書き保存
+    if (pre_registe) {
+      await this.registeRepository
+        .createQueryBuilder('register_rep')
+        .update(Register)
+        .set(register)
+        .where('name = :name', { name })
+        .execute();
+    } else {
+      await this.registeRepository.save(register);
+    }
+
+    return true;
+  }
+
+  async sendResetpassMail(name: string, mailAdress: string) {
+    // アカウントを持っているか確認
+    const user = await this.userRepository.findOne({
+      where: {
+        name: Equal(name),
+        email: Equal(mailAdress),
+      },
+    });
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    // メール送信
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: parseInt(process.env.MAIL_PORT),
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.MAIL_FROM,
+      to: mailAdress,
+      subject: 'Reset Password',
+      html:
+        `<p>Hello! ${name} Please access this URL to reset your password</p>
+      <br><a href=${process.env.FRONTEND_DOMAIN}` +
+        `/resetpass/mailreset?name=${name}&email=${mailAdress}>アカウント確認</a>
+      <br><div>email: ${mailAdress}</div>`,
+    };
+
+    transporter.sendMail(mailOptions);
 
     return true;
   }
