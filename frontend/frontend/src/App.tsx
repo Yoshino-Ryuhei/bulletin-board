@@ -11,7 +11,6 @@ import MailAuth from './components/MailAuth.tsx';
 import SignUp from './pages/SignUp.tsx';
 import Registration from './components/Registration.tsx';
 import UploadIcon from './components/UploadIcon.tsx';
-import ResetPass from './components/ResetPassForm.tsx';
 import ResetPassForm from './components/ResetPassForm.tsx';
 import ResetPassPage from './components/ResetPassPage.tsx';
 
