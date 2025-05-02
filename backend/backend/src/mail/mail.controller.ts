@@ -18,6 +18,14 @@ export class MailController {
     return await this.mailService.sendRegisteMail(name, mailAdress);
   }
 
+  @Post('send/update')
+  async sendUpdateEmail(
+    @Body('name') name: string,
+    @Body('email') mailAdress: string,
+  ) {
+    return await this.mailService.sendUpdateMail(name, mailAdress);
+  }
+
   @Put('send/resetpass')
   async sendResetpassEmail(
     @Body('name') name: string,

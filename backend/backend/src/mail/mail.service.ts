@@ -125,6 +125,28 @@ export class MailService {
     return true;
   }
 
+  async sendUpdateMail(name: string, mailAdress: string) {
+    // メール送信
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: parseInt(process.env.MAIL_PORT),
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.MAIL_FROM,
+      to: mailAdress,
+      subject: 'Update',
+      html: `<p>Hello! ${name} Let you know update your account information</p>
+          <br><div>name: ${name}</div>
+          <br><div>email: ${mailAdress}</div>`,
+    };
+
+    transporter.sendMail(mailOptions);
+  }
+
   async sendResetpassMail(name: string, mailAdress: string) {
     // アカウントを持っているか確認
     const user = await this.userRepository.findOne({

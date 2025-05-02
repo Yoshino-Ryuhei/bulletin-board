@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../providers/UserProvider.tsx";
 import { updateUser } from "../api/User.tsx";
 import styled from "styled-components";
+import { sendUpdateMail } from "../api/Mail.tsx";
 
 export default function ProfileEditLayout() {
     const navigate = useNavigate();
@@ -22,8 +23,13 @@ export default function ProfileEditLayout() {
             alert("入力された２つのパスワードが違います")
             return
         }
-        const res = await updateUser(userName, userEmail, userPass, userInfo.id, userInfo.token)
-        if(!res){
+        try {
+            await sendUpdateMail(userName,userEmail)
+        } catch (e) {
+            alert("有効なメールアドレスを入力してください")
+        }
+        const res2 = await updateUser(userName, userEmail, userPass, userInfo.id, userInfo.token)
+        if(!res2){
             return
         }
         setUserInfo({id: userInfo.id, token: userInfo.token, email: userEmail})
