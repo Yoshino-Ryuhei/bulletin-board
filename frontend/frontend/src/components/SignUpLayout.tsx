@@ -10,7 +10,7 @@ export default function SignUpLayout() {
     const navigate = useNavigate();
 
     const onSignUpClick = async () => {
-        const res = await sendRegistMail(name, email)
+        const res = await sendRegistMail(String(name), String(email))
         if(res){
             setSendEmail(true);
         }

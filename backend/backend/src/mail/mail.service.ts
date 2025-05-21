@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Register } from 'src/entities/register';
 import { Equal, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user';
+import { escapeHTML } from 'src/utils/EscapeHTML';
 
 const secretKey = Buffer.from(String(process.env.OTP_SECRET_KEY));
 
@@ -86,15 +87,17 @@ export class MailService {
         pass: process.env.MAIL_PASSWORD,
       },
     });
+    const escape_name = escapeHTML(name);
+    const escape_mail = escapeHTML(mailAdress);
     const mailOptions = {
       from: process.env.MAIL_FROM,
-      to: mailAdress,
+      to: escape_mail,
       subject: 'One time password',
       html:
-        `<p>Hello! ${name} Please access this URL to sign in our bulletin borad!</p>
+        `<p>Hello! ${escape_name} Please access this URL to sign in our bulletin borad!</p>
           <br><a href=${process.env.FRONTEND_DOMAIN}` +
         `/signup/mailauth?token=${token}>アカウント確認</a>
-          <br><div>email: ${mailAdress}</div>
+          <br><div>email: ${escape_mail}</div>
           <br><div>One Time Password: ${otp}</div>`,
     };
 
@@ -135,13 +138,15 @@ export class MailService {
         pass: process.env.MAIL_PASSWORD,
       },
     });
+    const escape_name = escapeHTML(name);
+    const escape_mail = escapeHTML(mailAdress);
     const mailOptions = {
       from: process.env.MAIL_FROM,
       to: mailAdress,
       subject: 'Update',
-      html: `<p>Hello! ${name} Let you know update your account information</p>
-          <br><div>name: ${name}</div>
-          <br><div>email: ${mailAdress}</div>`,
+      html: `<p>Hello! ${escape_name} Let you know update your account information</p>
+          <br><div>name: ${escape_name}</div>
+          <br><div>email: ${escape_mail}</div>`,
     };
 
     transporter.sendMail(mailOptions);
@@ -168,15 +173,17 @@ export class MailService {
         pass: process.env.MAIL_PASSWORD,
       },
     });
+    const escape_name = escapeHTML(name);
+    const escape_mail = escapeHTML(mailAdress);
     const mailOptions = {
       from: process.env.MAIL_FROM,
       to: mailAdress,
       subject: 'Reset Password',
       html:
-        `<p>Hello! ${name} Please access this URL to reset your password</p>
+        `<p>Hello! ${escape_name} Please access this URL to reset your password</p>
       <br><a href=${process.env.FRONTEND_DOMAIN}` +
-        `/resetpass/mailreset?name=${name}&email=${mailAdress}>アカウント確認</a>
-      <br><div>email: ${mailAdress}</div>`,
+        `/resetpass/mailreset?name=${name}&email=${escape_mail}>アカウント確認</a>
+      <br><div>email: ${escape_mail}</div>`,
     };
 
     transporter.sendMail(mailOptions);
