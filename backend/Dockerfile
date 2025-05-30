@@ -17,5 +17,8 @@ ENV PORT=8000
 WORKDIR /backend
 COPY backend/package*.json ./
 COPY backend/.env ./
+COPY backend/tsconfig.json ./
+COPY backend/tsconfig.build.json ./
 RUN npm install #--only=development
+RUN npm run build
 CMD ["npm","run","start:dev"]

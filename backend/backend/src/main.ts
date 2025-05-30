@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cors from 'cors';
 
+import { Server } from 'socket.io';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // Enable cors at the server side.
@@ -14,6 +16,16 @@ async function bootstrap() {
   app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     next();
+  });
+
+  const io = new Server(app.getHttpServer(), {
+    cors: { origin: '*', methods: ['GET'] },
+  });
+
+  io.on('connection', (socket) => {
+    socket.on('new_post', (post) => {
+      io.emit('new_post', post);
+    });
   });
 
   await app.listen(process.env.PORT ?? 3000);

@@ -18,6 +18,7 @@ services:
     container_name: my_backend
     ports:
       - "8000:8000" #バックエンドAPI用
+      - "3001:3001" #web socket用
       - "587:587" #SMTP用ポート
     environment:
       - WATCHPACK_POLLING=true

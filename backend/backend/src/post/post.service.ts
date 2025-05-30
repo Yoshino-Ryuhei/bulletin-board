@@ -17,7 +17,7 @@ export class PostService {
       user_id: payload.id,
       content: message,
     };
-    await this.microPostsRepository.save(record);
+    return await this.microPostsRepository.save(record);
   }
 
   async getList(start: number = 0, nr_recodes: number = 1, word: string = '') {
