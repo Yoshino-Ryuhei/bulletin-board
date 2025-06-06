@@ -3,8 +3,10 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
+import * as sharp from 'sharp';
 import 'multer';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { User } from 'src/entities/user';
@@ -28,13 +30,17 @@ export class UserIconService {
   state = uuidv4();
 
   async upload(payload: JwtPayload, file: Express.Multer.File) {
-    const key = `user-icons/${payload.id}/${this.state}}`;
+    const key = `user-icons/${payload.id}/${this.state}`;
+    const resizedFile = await sharp(file.buffer)
+      .resize({ width: 128, height: 128 })
+      .jpeg({ quality: 80 })
+      .toBuffer();
 
     await this.s3.send(
       new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: key,
-        Body: file.buffer,
+        Body: resizedFile,
         ContentType: file.mimetype,
       }),
     );
@@ -48,8 +54,18 @@ export class UserIconService {
     if (!user) {
       throw new NotFoundException();
     }
+    const oldIconKey = user.icon_url;
     user.icon_url = key;
     await this.userRepository.save(user);
+
+    if (oldIconKey && oldIconKey !== key) {
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+          Key: oldIconKey,
+        }),
+      );
+    }
 
     return key;
   }
@@ -64,6 +80,9 @@ export class UserIconService {
       throw new NotFoundException();
     }
     const key = user.icon_url;
+    if (!key) {
+      return;
+    }
 
     const url = await getSignedUrl(
       this.s3,
